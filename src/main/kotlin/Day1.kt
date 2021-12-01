@@ -1,6 +1,6 @@
 class Day1(input: List<String>) {
 
-    private val measurements = input.map { digit -> digit.toInt() }
+    private val measurements = input.map { measurement -> measurement.toInt() }
 
     fun part1() = measurements
         .zipWithNext()
@@ -10,5 +10,4 @@ class Day1(input: List<String>) {
         .map { group -> group.sum() }
         .zipWithNext()
         .count { (current, next) -> next > current }
-
 }
