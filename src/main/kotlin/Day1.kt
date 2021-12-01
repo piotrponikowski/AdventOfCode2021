@@ -1,7 +1,14 @@
 class Day1(input: List<String>) {
 
-    fun part1() = 1
+    private val measurements = input.map { digit -> digit.toInt() }
 
-    fun part2() = 2
-    
+    fun part1() = measurements
+        .zipWithNext()
+        .count { (current, next) -> next > current }
+
+    fun part2() = measurements.windowed(3)
+        .map { group -> group.sum() }
+        .zipWithNext()
+        .count { (current, next) -> next > current }
+
 }
