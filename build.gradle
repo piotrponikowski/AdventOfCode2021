@@ -2,9 +2,6 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.6.0'
 }
 
-group 'pl.pponikowski'
-version '1.0.0'
-
 repositories {
     mavenCentral()
 }
