@@ -18,6 +18,6 @@ class Day4(private val input: List<String>) {
         fun score() = (values.flatten() - marked.toSet()).sum() * marked.last()
 
         private fun isWinning() = values.any { row -> marked.containsAll(row) }
-                || (0..4).any { column -> (0..4).all { row -> values[row][column] in marked } }
+                || (0..4).any { x -> (0..4).all { y -> values[y][x] in marked } }
     }
 }
