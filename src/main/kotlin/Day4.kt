@@ -8,7 +8,7 @@ class Day4(private val input: List<String>) {
     private fun solve() = sequence.fold(parseBoards()) { boards, number -> boards.map { board -> board.mark(number) } }
 
     private fun parseBoards() = input.drop(2).windowed(5, 6)
-        .map { board -> board.map { row -> row.split(" ").mapNotNull { v -> v.toIntOrNull() } } }
+        .map { board -> board.map { row -> row.split(" ").mapNotNull { value -> value.toIntOrNull() } } }
         .map { values -> Board(values) }
 
     data class Board(val values: List<List<Int>>, val marked: List<Int> = emptyList()) {
