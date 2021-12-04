@@ -1,6 +1,6 @@
 class Day4(private val input: List<String>) {
 
-    private val sequence = input.first().split(",").map { it.toInt() }
+    private val sequence = input.first().split(",").map { number -> number.toInt() }
 
     fun part1() = solve().minByOrNull { board -> board.marked.size }!!.score()
     fun part2() = solve().maxByOrNull { board -> board.marked.size }!!.score()
