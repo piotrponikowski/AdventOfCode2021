@@ -1,12 +1,11 @@
 class Day4(private val input: List<String>) {
 
-    private val numbersSequence = input.first().split(",").map { it.toInt() }
+    private val sequence = input.first().split(",").map { it.toInt() }
 
     fun part1() = solve().minByOrNull { board -> board.marked.size }!!.score()
     fun part2() = solve().maxByOrNull { board -> board.marked.size }!!.score()
 
-    private fun solve() =
-        numbersSequence.fold(parseBoards()) { boards, number -> boards.map { board -> board.mark(number) } }
+    private fun solve() = sequence.fold(parseBoards()) { boards, number -> boards.map { board -> board.mark(number) } }
 
     private fun parseBoards() = input.drop(2).windowed(5, 6)
         .map { board -> board.map { row -> row.split(" ").mapNotNull { v -> v.toIntOrNull() } } }
