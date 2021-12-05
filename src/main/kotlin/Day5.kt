@@ -7,11 +7,11 @@ class Day5(private val input: List<String>) {
     fun part1() = solve(false)
     fun part2() = solve(true)
 
-    private fun solve(supportsDiagonal: Boolean) = gatherPoints(supportsDiagonal)
+    private fun solve(supportsDiagonal: Boolean) = collectLinePoints(supportsDiagonal)
         .groupingBy { point -> point }.eachCount()
         .filterValues { count -> count > 1 }.count()
 
-    private fun gatherPoints(supportsDiagonal: Boolean) = parsePoints().flatMap { (a, b) ->
+    private fun collectLinePoints(supportsDiagonal: Boolean) = parsePoints().flatMap { (a, b) ->
         when {
             a.x == b.x -> toHorizontal(a, b)
             a.y == b.y -> toVertical(a, b)
