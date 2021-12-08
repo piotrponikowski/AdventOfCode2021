@@ -1,5 +1,5 @@
 class Day8(private val input: List<String>) {
-    
+
     fun part1() = parseEntries().sumOf { (_, output) -> output.count { segment -> segment.size in listOf(2, 3, 4, 7) } }
 
     fun part2() = parseEntries().sumOf { (patternGroup, outputGroup) ->
@@ -22,13 +22,15 @@ class Day8(private val input: List<String>) {
         Pattern(number = 4) { segment, _ -> segment.size == 4 },
         Pattern(number = 7) { segment, _ -> segment.size == 3 },
         Pattern(number = 8) { segment, _ -> segment.size == 7 },
-        Pattern(number = 9) { segment, detected -> segment.size == 6 && segment.containsAll(detected[4]!!) },
-        Pattern(number = 6) { segment, detected -> segment.size == 6 && !segment.containsAll(detected[7]!!) },
-        Pattern(number = 3) { segment, detected -> segment.size == 5 && segment.containsAll(detected[1]!!) },
-        Pattern(number = 5) { segment, detected -> segment.size == 5 && detected[6]!!.containsAll(segment) },
-        Pattern(number = 2) { segment, detected -> segment.size == 5 && !detected[9]!!.containsAll(segment) },
-        Pattern(number = 0) { segment, detected -> segment.size == 6 && !segment.containsAll(detected[5]!!) }
+        Pattern(number = 9) { segment, detected -> segment.size == 6 && isSubset(segment, detected[4]!!) },
+        Pattern(number = 6) { segment, detected -> segment.size == 6 && !isSubset(segment, detected[7]!!) },
+        Pattern(number = 3) { segment, detected -> segment.size == 5 && isSubset(segment, detected[1]!!) },
+        Pattern(number = 5) { segment, detected -> segment.size == 5 && isSubset(detected[6]!!, segment) },
+        Pattern(number = 2) { segment, detected -> segment.size == 5 && !isSubset(detected[9]!!, segment) },
+        Pattern(number = 0) { segment, detected -> segment.size == 6 && !isSubset(segment, detected[5]!!) }
     )
+
+    private fun isSubset(segment: List<Char>, other: List<Char>) = segment.containsAll(other)
 
     data class Pattern(val number: Int, val condition: (List<Char>, Map<Int, List<Char>>) -> Boolean)
 }
