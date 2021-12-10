@@ -2,11 +2,11 @@ class Day10(input: List<String>) {
     private val data = input.map { line -> line.toCharArray().toList() }
 
     fun part1() = data.mapNotNull { brackets -> findCorrupted(brackets) }
-        .sumOf { corruptedBracket -> findBracket(corruptedBracket).corruptedScore }
+        .sumOf { corruptedBracket -> getBracket(corruptedBracket).corruptedScore }
 
     fun part2() = data.filter { brackets -> !isCorrupted(brackets) }
         .map { brackets -> findIncomplete(brackets).reversed() }
-        .map { incomplete -> incomplete.fold(0L) { score, bracket -> score * 5 + findBracket(bracket).incompleteScore } }
+        .map { incomplete -> incomplete.fold(0L) { score, bracket -> score * 5 + getBracket(bracket).incompleteScore } }
         .sorted().let { scores -> scores[scores.size / 2] }
 
     private fun findIncomplete(chunk: List<Char>, openBrackets: List<Char> = emptyList()): List<Char> {
@@ -21,7 +21,7 @@ class Day10(input: List<String>) {
         return when {
             chunk.isEmpty() -> null
             isOpeningBracket(chunk.first()) -> findCorrupted(chunk.drop(1), stack + chunk.take(1))
-            findBracket(stack.last()).closing == chunk.first() -> findCorrupted(chunk.drop(1), stack.dropLast(1))
+            getBracket(stack.last()).closing == chunk.first() -> findCorrupted(chunk.drop(1), stack.dropLast(1))
             else -> chunk.first()
         }
     }
@@ -30,8 +30,8 @@ class Day10(input: List<String>) {
 
     private fun isOpeningBracket(symbol: Char) = brackets.any { bracket -> symbol == bracket.opening }
 
-    private fun findBracket(symbol: Char) = brackets
-        .first { bracket -> symbol in listOf(bracket.opening, bracket.closing) }
+    private fun getBracket(symbol: Char) =
+        brackets.first { bracket -> symbol in listOf(bracket.opening, bracket.closing) }
 
     private val brackets = listOf(
         Bracket('(', ')', 3, 1),
