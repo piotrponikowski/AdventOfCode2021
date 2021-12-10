@@ -2,7 +2,7 @@ class Day10(input: List<String>) {
     private val data = input.map { line -> line.toCharArray().toList() }
 
     fun part1() = data.mapNotNull { brackets -> findCorrupted(brackets) }
-        .sumOf { corruptedBracket -> getBracket(corruptedBracket).corruptedScore }
+        .sumOf { corrupted -> getBracket(corrupted).corruptedScore }
 
     fun part2() = data.filter { brackets -> !isCorrupted(brackets) }
         .map { brackets -> findIncomplete(brackets).reversed() }
