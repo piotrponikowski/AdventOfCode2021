@@ -27,10 +27,11 @@ class Day10(input: List<String>) {
     }
 
     private fun isCorrupted(chunk: List<Char>) = findCorrupted(chunk) != null
-    
+
     private fun isOpeningBracket(symbol: Char) = brackets.any { bracket -> symbol == bracket.opening }
-    
-    private fun findBracket(symbol: Char) = brackets.first { bracket -> symbol in listOf(bracket.opening, bracket.closing) }
+
+    private fun findBracket(symbol: Char) = brackets
+        .first { bracket -> symbol in listOf(bracket.opening, bracket.closing) }
 
     private val brackets = listOf(
         Bracket('(', ')', 3, 1),
