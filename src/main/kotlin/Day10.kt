@@ -5,15 +5,15 @@ class Day10(input: List<String>) {
         .sumOf { corruptedBracket -> findBracket(corruptedBracket).corruptedScore }
 
     fun part2() = data.filter { brackets -> !isCorrupted(brackets) }
-        .map { brackets -> findIncompleteBrackets(brackets).reversed() }
+        .map { brackets -> findIncomplete(brackets).reversed() }
         .map { incomplete -> incomplete.fold(0L) { score, bracket -> score * 5 + findBracket(bracket).incompleteScore } }
         .sorted().let { scores -> scores[scores.size / 2] }
 
-    private fun findIncompleteBrackets(chunk: List<Char>, openBrackets: List<Char> = emptyList()): List<Char> {
+    private fun findIncomplete(chunk: List<Char>, openBrackets: List<Char> = emptyList()): List<Char> {
         return when {
             chunk.isEmpty() -> openBrackets
-            isOpeningBracket(chunk.first()) -> findIncompleteBrackets(chunk.drop(1), openBrackets + chunk.take(1))
-            else -> findIncompleteBrackets(chunk.drop(1), openBrackets.dropLast(1))
+            isOpeningBracket(chunk.first()) -> findIncomplete(chunk.drop(1), openBrackets + chunk.take(1))
+            else -> findIncomplete(chunk.drop(1), openBrackets.dropLast(1))
         }
     }
 
