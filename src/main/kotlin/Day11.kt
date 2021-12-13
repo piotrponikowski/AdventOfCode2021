@@ -1,29 +1,28 @@
 class Day11(input: List<String>) {
 
-    private val data = input.map { line -> line.toCharArray().map { digit -> digit.toString().toInt() } }
+    private val data = input.map { line -> line.toCharArray().map { energy -> energy.toString().toInt() } }
         .flatMapIndexed { y, line -> line.mapIndexed { x, energy -> Point(x, y) to energy } }.toMap()
 
     fun part1() = stepSequence.take(100).last().let { (totalFlashes) -> totalFlashes }
 
-    fun part2() = stepSequence.takeWhile { (_, allFlashed) -> !allFlashed }.count() + 1
+    fun part2() = stepSequence.indexOfFirst { (_, allFlashed) -> allFlashed } + 1
 
     private val stepSequence = sequence {
         var state = data
         var totalFlashes = 0
 
         while (true) {
-            state = step(state)
+            state = state
+                .mapValues { (_, energy) -> energy + 1 }
+                .let { chargedState -> flash(chargedState) }
+                .mapValues { (_, energy) -> if (energy > 9) 0 else energy }
+            
             totalFlashes += state.filterValues { energy -> energy == 0 }.count()
             val allFlashed = state.all { (_, energy) -> energy == 0 }
 
             yield(totalFlashes to allFlashed)
         }
     }
-
-    private fun step(state: Map<Point, Int>) = state
-        .mapValues { (_, energy) -> energy + 1 }
-        .let { chargedState -> flash(chargedState) }
-        .mapValues { (_, energy) -> if (energy > 9) 0 else energy }
 
     private fun flash(state: Map<Point, Int>, flashed: Set<Point> = emptySet()): Map<Point, Int> {
         val flashingPoints = state.filter { (_, energy) -> energy > 9 }.keys - flashed
@@ -47,9 +46,4 @@ class Day11(input: List<String>) {
     data class Point(val x: Int, val y: Int) {
         operator fun plus(other: Point) = Point(x + other.x, y + other.y)
     }
-}
-
-fun main() {
-    val input = readLines("day11.txt", false)
-    println(Day11(input).part1())
 }
