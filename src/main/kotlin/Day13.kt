@@ -1,13 +1,13 @@
 import kotlin.math.abs
 
 class Day13(input: List<String>) {
-    private val points = input.filter { it.matches(Regex("""\d+,\d+""")) }
-        .map { it.split(",").map { value -> value.toInt() } }
+    private val points = input.filter { line -> line.matches(Regex("""\d+,\d+""")) }
+        .map { line -> line.split(",").map { value -> value.toInt() } }
         .map { (x, y) -> Point(x, y) }.toSet()
 
-    private val folds = input.filter { it.contains("fold along") }
-        .map { it.replace("fold along ", "") }
-        .map { it.split("=") }
+    private val folds = input.filter { line -> line.contains("fold along") }
+        .map { line -> line.replace("fold along ", "") }
+        .map { line -> line.split("=") }
         .map { (diagonal, value) -> Fold(Diagonal.valueOf(diagonal.uppercase()), value.toInt()) }
 
     fun part1() = foldPoints(points, folds.first()).size
@@ -22,10 +22,10 @@ class Day13(input: List<String>) {
     }.toSet()
 
     private fun printPoints(state: Set<Point>): String {
-        val xMax = state.maxOf { it.x }
-        val xMin = state.minOf { it.x }
-        val yMax = state.maxOf { it.y }
-        val yMin = state.minOf { it.y }
+        val xMax = state.maxOf { point -> point.x }
+        val xMin = state.minOf { point -> point.x }
+        val yMax = state.maxOf { point -> point.y }
+        val yMin = state.minOf { point -> point.y }
 
         return (yMin..yMax).joinToString("\n") { y ->
             (xMin..xMax).joinToString("") { x ->
