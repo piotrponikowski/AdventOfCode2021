@@ -7,7 +7,7 @@ class Day14(val input: List<String>) {
 
     private val initialState = template.windowed(2)
         .groupingBy { pair -> pair }.eachCount()
-        .mapValues { (_, frequency) -> frequency.toLong() }
+        .mapValues { (_, count) -> count.toLong() }
 
     private val emptyState = insertions.keys.associateWith { 0L }
 
@@ -15,21 +15,31 @@ class Day14(val input: List<String>) {
 
     fun part2() = solve(40)
 
-    private fun solve(steps: Int) = (0 until steps).fold(initialState) { state, _ -> step(state) }
+    private fun solve(steps: Int) = (0 until steps)
+        .fold(initialState) { state, _ -> step(state) }
         .let { state ->
-            val frequencies = (state.map { (pair, frequency) -> pair.first() to frequency } + (template.last() to 1L))
-            val scores = frequencies.groupBy { (pair, _) -> pair }.mapValues { (_, entries) -> entries.sumOf { it.second } }
-            scores.maxOf { it.value } - scores.minOf { it.value }
+            val scores = (state.map { (pair, count) -> pair.first() to count } + (template.last() to 1L))
+                .groupBy { (type, _) -> type }.values
+                .map { partialCount -> partialCount.sumOf { (_, count) -> count } }
+
+            val maxCount = scores.maxOf { count -> count }
+            val minCount = scores.minOf { count -> count }
+            maxCount - minCount
         }
 
     private fun step(state: Map<String, Long>) = state.keys.fold(emptyState) { newState, pair ->
+        val insertion = insertions[pair]!!
+        val frequency = state[pair]!!
+
+        val pair1 = pair.first() + insertion
+        val pair2 = insertion + pair.last()
+
         newState.mapValues { (key, value) ->
             when (key) {
-                pair.first() + insertions[pair]!! -> value + state[pair]!!
-                insertions[pair]!! + pair.last() -> value + state[pair]!!
+                pair1 -> value + frequency
+                pair2 -> value + frequency
                 else -> value
             }
         }
     }
-
 }
