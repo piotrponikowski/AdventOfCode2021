@@ -22,10 +22,7 @@ class Day15(val input: List<String>) {
 
     fun solve(cave: Map<Point, Int>): Int {
         val startPoint = Point(0, 0)
-        val endPoint = cave.keys.maxByOrNull { point -> point.x + point.y }!!
-
-        val startRisk = cave[startPoint]!!
-        val distanceMap = mutableMapOf(startPoint to startRisk)
+        val distanceMap = mutableMapOf(startPoint to 0)
 
         val searchQueue = PriorityQueue<Point> { point1, point2 -> distanceMap[point1]!! - distanceMap[point2]!! }
         searchQueue.add(startPoint)
@@ -49,7 +46,8 @@ class Day15(val input: List<String>) {
             }
         }
 
-        return distanceMap[endPoint]!! - startRisk
+        val endPoint = cave.keys.maxByOrNull { point -> point.x + point.y }!!
+        return distanceMap[endPoint]!!
     }
 
     private val directions = listOf(Point(-1, 0), Point(1, 0), Point(0, -1), Point(0, 1))
