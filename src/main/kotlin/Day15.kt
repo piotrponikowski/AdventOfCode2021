@@ -1,86 +1,55 @@
-import kotlin.math.min
+import java.util.*
 
 class Day15(val input: List<String>) {
-    val points =
-        input.flatMapIndexed { y, line -> line.mapIndexed { x, value -> Point(x, y) to value.toString().toInt() } }
-            .toMap()
 
-    val width = input.first().length
-    val height = input.size
+    fun part1() = solve(parseCave())
+    fun part2() = solve(createBigCave())
 
-    val points2 = (0 until 5).flatMap { ty ->
-        (0 until 5).flatMap { tx ->
-            val delta = ty + tx
+    private val caveWidth = input.first().length
+    private val caveHeight = input.size
 
-            points.map { (point, value) ->
-                val newPoint = Point(point.x + (tx * width), point.y + (ty * height))
-                var newRisk = (value + delta)
-                while (newRisk > 9) {
-                    newRisk -= 9
-                }
+    private fun parseCave() = input.map { line -> line.map { value -> value.toString().toInt() } }
+        .flatMapIndexed { y, line -> line.mapIndexed { x, risk -> Point(x, y) to risk } }.toMap()
 
+    private fun createBigCave() = parseCave()
+        .let { cave -> (0 until 5).flatMap { ty -> (0 until 5).flatMap { tx -> copyCave(cave, tx, ty) } }.toMap() }
 
-                newPoint to newRisk
-            }
-        }
-    }.toMap()
-
-    fun part1() = solve(points)
-    fun part2() = solve(points2)
-
-    fun solve(tiles: Map<Point, Int>) {
-        val start = Point(0, 0)
-        val visited = mutableSetOf<Point>()
-        val pointsForCheck = mutableListOf(start)
-        val totalDistance = mutableMapOf(start to tiles[start]!!)
-//        val queue = PriorityQueue<Point>()  {t1, t2 -> t1.count - t2.count}
-
-
-        while (pointsForCheck.isNotEmpty()) {
-            val currentPoint = pointsForCheck.removeFirst()
-//            val currentPoint = pointsForCheck.minByOrNull { p -> totalDistance[p]!! }!!
-//            pointsForCheck.remove(currentPoint)
-//            println(pointsForCheck.size)
-
-//            if(currentPoint !in visited) {
-            val currentDistance = totalDistance[currentPoint]!!
-
-            val neighbours = directions.map { direction -> currentPoint + direction }
-                .filter { neighbour -> neighbour in tiles }
-//                    .filter { neighbour -> neighbour !in visited }
-
-
-            neighbours.forEach { neighbour ->
-                val nextDistance = currentDistance + tiles[neighbour]!!
-                val nextTotalDistance = totalDistance[neighbour] ?: Int.MAX_VALUE
-                totalDistance[neighbour] = min(nextDistance, nextTotalDistance)
-
-                if (nextDistance < nextTotalDistance) {
-                    pointsForCheck += neighbour
-                }
-            }
-
-              
-        }
-
-        val xMax = totalDistance.keys.maxOf { point -> point.x }
-        val yMax = totalDistance.keys.maxOf { point -> point.y }
-
-//        println(printPoints(totalDistance))
-        println(totalDistance[Point(xMax, yMax)]!! - 1)
+    private fun copyCave(cave: Map<Point, Int>, tx: Int, ty: Int) = cave.map { (point, risk) ->
+        val newPoint = Point(point.x + (tx * caveWidth), point.y + (ty * caveHeight))
+        val newRisk = (risk + tx + ty).let { newRisk -> if (newRisk > 9) newRisk - 9 else newRisk }
+        newPoint to newRisk
     }
 
-    private fun printPoints(state: Map<Point, Int>): String {
-        val xMax = state.keys.maxOf { point -> point.x }
-        val xMin = state.keys.minOf { point -> point.x }
-        val yMax = state.keys.maxOf { point -> point.y }
-        val yMin = state.keys.minOf { point -> point.y }
+    fun solve(cave: Map<Point, Int>): Int {
+        val startPoint = Point(0, 0)
+        val endPoint = cave.keys.maxByOrNull { point -> point.x + point.y }!!
 
-        return (yMin..yMax).joinToString("\n") { y ->
-            (xMin..xMax).joinToString("") { x ->
-                state[Point(x, y)].toString() + "\t"
+        val startRisk = cave[startPoint]!!
+        val distanceMap = mutableMapOf(startPoint to startRisk)
+
+        val searchQueue = PriorityQueue<Point> { point1, point2 -> distanceMap[point1]!! - distanceMap[point2]!! }
+        searchQueue.add(startPoint)
+
+        while (searchQueue.isNotEmpty()) {
+            val point = searchQueue.poll()
+            val risk = distanceMap[point]!!
+
+            val neighbours = directions
+                .map { direction -> point + direction }
+                .filter { neighbour -> neighbour in cave }
+
+            neighbours.forEach { neighbour ->
+                val newDistance = risk + cave[neighbour]!!
+                val prevDistance = distanceMap[neighbour] ?: Int.MAX_VALUE
+
+                if (newDistance < prevDistance) {
+                    distanceMap[neighbour] = newDistance
+                    searchQueue += neighbour
+                }
             }
         }
+
+        return distanceMap[endPoint]!! - startRisk
     }
 
     private val directions = listOf(Point(-1, 0), Point(1, 0), Point(0, -1), Point(0, 1))
@@ -88,13 +57,4 @@ class Day15(val input: List<String>) {
     data class Point(val x: Int, val y: Int) {
         operator fun plus(other: Point) = Point(x + other.x, y + other.y)
     }
-}
-
-fun main() {
-    // 2851
-    // 2844
-    val input = readLines("day15.txt", false)
-    println(Day15(input).part1())
-    println(Day15(input).part2())
-
 }

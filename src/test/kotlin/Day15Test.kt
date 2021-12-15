@@ -8,21 +8,21 @@ class Day15Test : FunSpec({
 
     context("Part 1") {
         test("should solve example") {
-            Day15(exampleInput).part1() shouldBe 1
+            Day15(exampleInput).part1() shouldBe 40
         }
 
         test("should solve real input") {
-            Day15(realInput).part1() shouldBe 1
+            Day15(realInput).part1() shouldBe 429
         }
     }
 
     context("Part 2") {
         test("should solve example") {
-            Day15(exampleInput).part2() shouldBe 2
+            Day15(exampleInput).part2() shouldBe 315
         }
 
         test("should solve real input") {
-            Day15(realInput).part2() shouldBe 2
+            Day15(realInput).part2() shouldBe 2844
         }
     }
 })
