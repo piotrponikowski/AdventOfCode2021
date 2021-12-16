@@ -4,37 +4,41 @@ class Day16(val input: String) {
         .map { it.toString().toInt(16).toString(2).padStart(4, '0') }
         .joinToString("")
 
-    fun part1():Int {
+    fun part1(): Int {
         val (packets, _) = parse(sequence)
         val versionSum = scorePackets(packets)
         return versionSum
     }
 
-    fun part2():Int {
+    fun part2(): Long {
         val (packets, _) = parse(sequence)
-        val versionSum = scorePackets(packets)
+        val versionSum = calcPacket(packets[0])
         return versionSum
     }
 
-    fun calcPackets(packets: List<Packet>, sum: Int = 0) : Int {
+    fun calcPacket(packet: Packet): Long {
+        return when (packet.type) {
+            0 -> packet.packets.map { calcPacket(it) }.reduce { a, b -> a + b }
+            1 -> packet.packets.map { calcPacket(it) }.reduce { a, b -> a * b }
+            2 -> packet.packets.map { calcPacket(it) }.minOf { it }
+            3 -> packet.packets.map { calcPacket(it) }.maxOf { it }
+            5 -> if (calcPacket(packet.packets[0]) > calcPacket(packet.packets[1])) 1 else 0
+            6 -> if (calcPacket(packet.packets[0]) < calcPacket(packet.packets[1])) 1 else 0
+            7 -> if (calcPacket(packet.packets[0]) == calcPacket(packet.packets[1])) 1 else 0
+            else -> packet.literal
+        }
+    }
+
+
+    fun scorePackets(packets: List<Packet>, sum: Int = 0): Int {
         var result = sum
-        for(packet in packets) {
+        for (packet in packets) {
             result += packet.version
             result += scorePackets(packet.packets)
         }
         return result
     }
 
-
-    fun scorePackets(packets: List<Packet>, sum: Int = 0) : Int {
-        var result = sum
-        for(packet in packets) {
-            result += packet.version
-            result += scorePackets(packet.packets)
-        }
-        return result
-    }
-    
 
     fun parse(input: String, expectedPackets: Int = 1, paddingNeeded: Boolean = true): Pair<List<Packet>, String> {
         var data = input
@@ -59,8 +63,8 @@ class Day16(val input: String) {
                     literalData += next.drop(1)
                 }
                 packets.add(Packet(version, type, literalData.toLong(2)))
-                
-                if(paddingNeeded) {
+
+                if (paddingNeeded) {
                     val padding = data.length % 4
                     data = data.drop(padding)
                 }
@@ -75,24 +79,24 @@ class Day16(val input: String) {
                     val (subs, data2) = parse(data.take(totalLengthInBits), 99, false)
                     data = data.drop(totalLengthInBits)
 //                    data = data2
-                    
+
                     packets.add(Packet(version, type, 0, subs))
-                    
+
 
                 } else {
                     val numberOfSubPackets = data.take(11).toInt(2)
                     data = data.drop(11)
 
-                    val (subs, data2)  = parse(data, numberOfSubPackets, false)
+                    val (subs, data2) = parse(data, numberOfSubPackets, false)
                     packets.add(Packet(version, type, 0, subs))
                     data = data2
                 }
             }
-            
 
 
-            println(packets.last())
-            if(packets.size == expectedPackets || data.isEmpty()) {
+
+            //println(packets.last())
+            if (packets.size == expectedPackets || data.isEmpty()) {
                 break
             }
         }
@@ -104,6 +108,6 @@ class Day16(val input: String) {
 }
 
 fun main() {
-    val input = readText("day16.txt", true)
-    println(Day16(input).part1())
+    val input = readText("day16.txt", false)
+    println(Day16(input).part2())
 }
