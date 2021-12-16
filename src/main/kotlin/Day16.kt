@@ -1,113 +1,70 @@
 class Day16(val input: String) {
 
-    val sequence = input
-        .map { it.toString().toInt(16).toString(2).padStart(4, '0') }
-        .joinToString("")
+    fun part1() = parseInput().parsePacket().sumVersions()
+    fun part2() = parseInput().parsePacket().computeValue()
 
-    fun part1(): Int {
-        val (packets, _) = parse(sequence)
-        val versionSum = scorePackets(packets)
-        return versionSum
-    }
+    private fun parseInput() = input
+        .map { message -> message.toString().toInt(16).toString(2) }
+        .flatMap { part -> part.padStart(4, '0').toCharArray().toList() }
+        .let { sequence -> DataStream(sequence) }
 
-    fun part2(): Long {
-        val (packets, _) = parse(sequence)
-        val versionSum = calcPacket(packets[0])
-        return versionSum
-    }
+    class DataStream(val data: List<Char>, private var index: Int = 0) {
 
-    fun calcPacket(packet: Packet): Long {
-        return when (packet.type) {
-            0 -> packet.packets.map { calcPacket(it) }.reduce { a, b -> a + b }
-            1 -> packet.packets.map { calcPacket(it) }.reduce { a, b -> a * b }
-            2 -> packet.packets.map { calcPacket(it) }.minOf { it }
-            3 -> packet.packets.map { calcPacket(it) }.maxOf { it }
-            5 -> if (calcPacket(packet.packets[0]) > calcPacket(packet.packets[1])) 1 else 0
-            6 -> if (calcPacket(packet.packets[0]) < calcPacket(packet.packets[1])) 1 else 0
-            7 -> if (calcPacket(packet.packets[0]) == calcPacket(packet.packets[1])) 1 else 0
-            else -> packet.literal
-        }
-    }
+        fun parsePacket(): Packet {
+            val version = takeInt(3)
+            val type = takeInt(3)
 
-
-    fun scorePackets(packets: List<Packet>, sum: Int = 0): Int {
-        var result = sum
-        for (packet in packets) {
-            result += packet.version
-            result += scorePackets(packet.packets)
-        }
-        return result
-    }
-
-
-    fun parse(input: String, expectedPackets: Int = 1, paddingNeeded: Boolean = true): Pair<List<Packet>, String> {
-        var data = input
-        val packets = mutableListOf<Packet>()
-
-        while (data.isNotEmpty()) {
-
-            val version = data.take(3).toInt(2)
-            data = data.drop(3)
-
-            val type = data.take(3).toInt(2)
-            data = data.drop(3)
-
-            if (type == 4) {
-                var literalData = ""
-                var more = true
-                while (more) {
-                    val next = data.take(5)
-                    data = data.drop(5)
-
-                    more = next[0] == '1'
-                    literalData += next.drop(1)
-                }
-                packets.add(Packet(version, type, literalData.toLong(2)))
-
-                if (paddingNeeded) {
-                    val padding = data.length % 4
-                    data = data.drop(padding)
-                }
+            return if (type == 4) {
+                Packet(version, type, value = extractLiteral())
             } else {
-                val lengthType = data.take(1)
-                data = data.drop(1)
-
-                if (lengthType == "0") {
-                    val totalLengthInBits = data.take(15).toInt(2)
-                    data = data.drop(15)
-
-                    val (subs, data2) = parse(data.take(totalLengthInBits), 99, false)
-                    data = data.drop(totalLengthInBits)
-//                    data = data2
-
-                    packets.add(Packet(version, type, 0, subs))
-
-
+                val lengthType = takeInt(1)
+                if (lengthType == 0) {
+                    val subPacketsLength = takeInt(15)
+                    Packet(version, type, packets = extractPacketsByLength(index + subPacketsLength))
                 } else {
-                    val numberOfSubPackets = data.take(11).toInt(2)
-                    data = data.drop(11)
-
-                    val (subs, data2) = parse(data, numberOfSubPackets, false)
-                    packets.add(Packet(version, type, 0, subs))
-                    data = data2
+                    val subPacketsCount = takeInt(11)
+                    Packet(version, type, packets = extractPacketsByCount(subPacketsCount))
                 }
             }
-
-
-
-            //println(packets.last())
-            if (packets.size == expectedPackets || data.isEmpty()) {
-                break
-            }
         }
-        return packets to data
+
+        private fun extractLiteral(buffer: List<Char> = emptyList()): Long {
+            val hasNext = takeInt(1) == 1
+            val newBuffer = buffer + take(4)
+
+            return if (hasNext) extractLiteral(newBuffer)
+            else newBuffer.joinToString("").toLong(2)
+        }
+
+        private fun extractPacketsByLength(maxIndex: Int, packets: List<Packet> = emptyList()): List<Packet> {
+            return if (index == maxIndex) packets
+            else extractPacketsByLength(maxIndex, packets + parsePacket())
+        }
+
+        private fun extractPacketsByCount(count: Int) = (0 until count).map { parsePacket() }
+
+        private fun take(count: Int) = data.subList(index, index + count).also { index += count }
+
+        private fun takeInt(count: Int) = take(count).joinToString("").toInt(2)
     }
 
-    data class Packet(val version: Int, val type: Int, val literal: Long = 0, val packets: List<Packet> = emptyList())
-
-}
-
-fun main() {
-    val input = readText("day16.txt", false)
-    println(Day16(input).part2())
+    data class Packet(val version: Int, val type: Int, val value: Long = 0, val packets: List<Packet> = emptyList()) {
+        
+        fun sumVersions(): Int = version + packets.sumOf { subPacket -> subPacket.sumVersions() }
+        
+        fun computeValue(): Long {
+            val values = packets.map { subPacket -> subPacket.computeValue() }
+            return when (type) {
+                0 -> values.reduce { a, b -> a + b }
+                1 -> values.reduce { a, b -> a * b }
+                2 -> values.minOf { subPacket -> subPacket }
+                3 -> values.maxOf { subPacket -> subPacket }
+                4 -> value
+                5 -> values.let { (a, b) -> if (a > b) 1 else 0 }
+                6 -> values.let { (a, b) -> if (a < b) 1 else 0 }
+                7 -> values.let { (a, b) -> if (a == b) 1 else 0 }
+                else -> error("Unknown packet type.")
+            }
+        }
+    }
 }
