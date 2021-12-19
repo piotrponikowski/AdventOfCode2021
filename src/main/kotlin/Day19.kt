@@ -37,9 +37,9 @@ class Day19(val input: String) {
     }
 
     private fun matchScanner(scanner: Scanner, solvedScanner: Scanner): Scanner? {
-        for (direction in directions) {
-            for (rotation in rotations) {
-                val adjustedBeacons = scanner.beacons.map { beacon -> direction(beacon) * rotation }
+        for (swap in swaps) {
+            for (negation in negations) {
+                val adjustedBeacons = scanner.beacons.map { beacon -> swap(beacon) * negation }
                 matchBeacons(adjustedBeacons, solvedScanner.beacons)?.let { delta ->
                     return Scanner(scanner.index, adjustedBeacons.map { beacon -> beacon - delta }, delta)
                 }
@@ -52,7 +52,7 @@ class Day19(val input: String) {
         for (beacon in beacons) {
             for (solvedBeacon in solvedBeacons) {
                 val delta = beacon - solvedBeacon
-                val count = beacons.count { beacon -> beacon - delta in solvedBeacons }
+                val count = beacons.count { beaconToAdjust -> beaconToAdjust - delta in solvedBeacons }
                 if (count >= 12) {
                     return delta
                 }
@@ -61,10 +61,10 @@ class Day19(val input: String) {
         return null
     }
 
-    private val rotations = listOf(-1, 1)
+    private val negations = listOf(-1, 1)
         .let { rotation -> rotation.flatMap { x -> rotation.flatMap { y -> rotation.map { z -> Point(x, y, z) } } } }
 
-    private val directions = listOf<(Point) -> Point>(
+    private val swaps = listOf<(Point) -> Point>(
         { point -> Point(point.x, point.y, point.z) },
         { point -> Point(point.x, point.z, point.y) },
         { point -> Point(point.y, point.x, point.z) },
