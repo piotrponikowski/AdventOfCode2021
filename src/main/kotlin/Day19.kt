@@ -1,85 +1,58 @@
 import kotlin.math.abs
 
-class Day19(val input: List<String>) {
+class Day19(val input: String) {
 
-    private fun parse(): List<Scanner> {
-        val scannerRegex = Regex("""--- scanner (\d+) ---""")
-        val beaconRegex = Regex("""(-?\d+),(-?\d+),(-?\d+)""")
-        var beacons = mutableListOf<Point>()
-        val scanners = mutableListOf<Scanner>()
+    fun part1() = solve().flatMap { scanner -> scanner.beacons }.distinct().count()
 
-        var beaconIndex = 0
-        for (line in input) {
-            if (scannerRegex.matches(line)) {
-                beaconIndex = scannerRegex.matchEntire(line)!!.destructured.let { (index) -> index.toInt() }
-                beacons = mutableListOf()
-                scanners.add(Scanner(beaconIndex, beacons))
+    fun part2() = solve().map { scanner -> scanner.position }
+        .let { position -> position.flatMap { scanner1 -> position.map { scanner2 -> scanner1 to scanner2 } } }
+        .map { (point1, point2) -> abs(point1.x - point2.x) + abs(point1.y - point2.y) + abs(point1.z - point2.z) }
+        .maxOf { distance -> distance }
 
-            } else if (beaconRegex.matches(line)) {
-                beacons += beaconRegex.matchEntire(line)!!.destructured
-                    .let { (x, y, z) -> Point(x.toInt(), y.toInt(), z.toInt()) }
-            }
-        }
+    private fun parse() = input.split(System.lineSeparator().repeat(2))
+        .map { data -> data.split(System.lineSeparator()).drop(1).map { line -> line.split(",") } }
+        .mapIndexed { index, data -> Scanner(index, data.map { (x, y, z) -> Point(x.toInt(), y.toInt(), z.toInt()) }) }
 
-        return scanners
-    }
+    fun solve(): List<Scanner> {
+        val inputScanners = parse()
 
-    fun part1() = solve().keys.flatMap { it.beacons }.distinct().count()
+        val scannersToCheck = mutableListOf(inputScanners[0])
+        val solvedScanners = mutableListOf(inputScanners[0])
 
-    fun part2() = solve().values.let { scanners ->
-        scanners.flatMap { s1 ->
-            scanners.map { s2 ->
-                abs(s1.x - s2.x) + abs(s1.y - s2.y) + abs(s1.z - s2.z)
-            }
-        }
-    }.maxOf { it }
+        while (scannersToCheck.isNotEmpty()) {
+            val scannerToCheck = scannersToCheck.removeFirst()
 
-    fun solve(): Map<Scanner, Point> {
-        val scanners = parse().toMutableList()
+            val scannersToMatch = inputScanners
+                .filter { scanner -> scanner.index !in solvedScanners.map { solvedScanner -> solvedScanner.index } }
 
-        val solvedIndexes = mutableSetOf(scanners[0].index)
-        val solvedScanners = mutableMapOf(scanners[0] to Point(0, 0, 0))
-
-        while (solvedScanners.size < scanners.size) {
-            val scannersForSearch = scanners.filter { scanner -> scanner.index !in solvedIndexes }
-
-            val newSolved = mutableMapOf<Scanner, Point>()
-            for (scanner in scannersForSearch) {
-                for (solvedScanner in solvedScanners.keys) {
-                    matchScanner(scanner, solvedScanner)?.let { (matchedScanner, delta) ->
-                        newSolved[Scanner(scanner.index, matchedScanner.beacons.map { it - delta })] = delta
-                        solvedIndexes += scanner.index
-                    }
+            for (scanner in scannersToMatch) {
+                matchScanner(scanner, scannerToCheck)?.let { matchedScanner ->
+                    scannersToCheck += matchedScanner
+                    solvedScanners += matchedScanner
                 }
             }
-
-            println(solvedScanners.size)
-            solvedScanners += newSolved
         }
 
         return solvedScanners
     }
 
-    private fun matchScanner(scanner: Scanner, solvedScanner: Scanner): Pair<Scanner, Point>? {
+    private fun matchScanner(scanner: Scanner, solvedScanner: Scanner): Scanner? {
         for (direction in directions) {
             for (rotation in rotations) {
                 val adjustedBeacons = scanner.beacons.map { beacon -> direction(beacon) * rotation }
-                val delta = matchBeacons(adjustedBeacons, solvedScanner.beacons)
-
-                if (delta != null) {
-                    return Scanner(scanner.index, adjustedBeacons) to delta
+                matchBeacons(adjustedBeacons, solvedScanner.beacons)?.let { delta ->
+                    return Scanner(scanner.index, adjustedBeacons.map { beacon -> beacon - delta }, delta)
                 }
             }
         }
-
         return null
     }
 
     private fun matchBeacons(beacons: List<Point>, solvedBeacons: List<Point>): Point? {
         for (beacon in beacons) {
-            for (referenceBeacon in solvedBeacons) {
-                val delta = beacon - referenceBeacon
-                val count = beacons.map { it - delta }.count { it in solvedBeacons }
+            for (solvedBeacon in solvedBeacons) {
+                val delta = beacon - solvedBeacon
+                val count = beacons.count { beacon -> beacon - delta in solvedBeacons }
                 if (count >= 12) {
                     return delta
                 }
@@ -100,17 +73,11 @@ class Day19(val input: List<String>) {
         { point -> Point(point.z, point.y, point.x) },
     )
 
-    data class Scanner(val index: Int, val beacons: List<Point>)
+    data class Scanner(val index: Int, val beacons: List<Point>, val position: Point = Point(0, 0, 0))
 
     data class Point(val x: Int, val y: Int, val z: Int) {
         operator fun plus(other: Point) = Point(x + other.x, y + other.y, z + other.z)
         operator fun minus(other: Point) = Point(x - other.x, y - other.y, z - other.z)
         operator fun times(other: Point) = Point(x * other.x, y * other.y, z * other.z)
     }
-}
-
-fun main() {
-    val input = readLines("day19.txt", false)
-    println(Day19(input).part2())
-
 }
