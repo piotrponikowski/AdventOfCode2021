@@ -40,7 +40,7 @@ class Day19(val input: String) {
         for (swap in swaps) {
             for (negation in negations) {
                 val adjustedBeacons = scanner.beacons.map { beacon -> swap(beacon) * negation }
-                matchBeacons(adjustedBeacons, solvedScanner.beacons)?.let { delta ->
+                findDelta(adjustedBeacons, solvedScanner.beacons)?.let { delta ->
                     return Scanner(scanner.index, adjustedBeacons.map { beacon -> beacon - delta }, delta)
                 }
             }
@@ -48,7 +48,7 @@ class Day19(val input: String) {
         return null
     }
 
-    private fun matchBeacons(beacons: List<Point>, solvedBeacons: List<Point>): Point? {
+    private fun findDelta(beacons: List<Point>, solvedBeacons: List<Point>): Point? {
         for (beacon in beacons) {
             for (solvedBeacon in solvedBeacons) {
                 val delta = beacon - solvedBeacon
