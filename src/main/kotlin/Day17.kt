@@ -1,133 +1,29 @@
+import kotlin.math.max
+
 class Day17(val input: String) {
 
-    val targetArea = Regex("""^target area: x=(-?\d+)..(-?\d+), y=(-?\d+)..(-?\d+)${'$'}""")
+    private val target = Regex("""^target area: x=(-?\d+)\.\.(-?\d+), y=(-?\d+)\.\.(-?\d+)$""")
         .matchEntire(input)!!.destructured
         .let { (x1, x2, y1, y2) -> Point(x1.toInt(), y1.toInt()) to Point(x2.toInt(), y2.toInt()) }
 
     fun part1() = 1
-    fun part2(): Int {
-        val possibleX = (-1000..1000).filter { vx -> testVelocityX(vx) }
+    fun part2() = 2
 
-        println(possibleX)
-
-        var result = 0
-        possibleX.forEach { vx ->
-            println("Find for vx = $vx")
-
-            val possibleY = (-1000..1000).filter { vy -> testVelocityXY(vx, vy) }
-            println("found = $possibleY")
-            result += possibleY.size
+    data class Probe(val velocity: Point, val maxY: Int, val position: Point = Point(0, 0)) {
+        fun step() {
+            val newPosition = position + velocity
+            val newVelocity = Point(max(velocity.x - 1, 0), velocity.y - 1)
+            val maxY = max(newPosition.y, maxY)
+            
+            Probe(newPosition, maxY, newVelocity)
         }
 
-        return result
+//        fun missedTarget() =
+
     }
 
-    fun testVelocityXY(initialVelocityX: Int, initialVelocityY: Int): Boolean {
-
-
-        val (a1, a2) = targetArea
-
-        var vx = initialVelocityX
-        var vy = initialVelocityY
-
-        var py = 0
-        var px = 0
-
-        var step = 0
-        while (true) {
-
-            if (step > 1000) {
-                return false
-            }
-
-
-            px += vx
-            py += vy
-
-
-            vx = when {
-                vx < 0 -> vx + 1
-                vx > 0 -> vx - 1
-                else -> vx
-            }
-            vy -= 1
-
-            if (isWithinTarget(Point(px, py))) {
-                return true
-            }
-
-            step++
-        }
-    }
-
-    fun testVelocityX(initialVelocityX: Int): Boolean {
-        val (a1, a2) = targetArea
-
-        var vx = initialVelocityX
-        var px = 0
-        val result = mutableListOf<Int>()
-
-        var step = 0
-        while (true) {
-            if ((vx == 0 && (px < a1.x || px > a2.x))) {
-                return false
-            }
-
-            px += vx
-            vx = when {
-                vx < 0 -> vx + 1
-                vx > 0 -> vx - 1
-                else -> vx
-            }
-
-            if (px >= a1.x && px <= a2.x) {
-                return true
-            }
-        }
-    }
-
-    fun testVelocity(initialVelocity: Point): Int {
-        var velocity = initialVelocity
-        var position = Point(0, 0)
-
-        var maxY = Int.MIN_VALUE
-        repeat(10000) { step ->
-            position += velocity
-            println("$step $position $velocity")
-
-            if (position.y > maxY) {
-                maxY = position.y
-            }
-
-            if (position.y < targetArea.first.y) {
-                return Int.MIN_VALUE
-            }
-
-
-            val newVelocityX = when {
-                velocity.x < 0 -> velocity.x + 1
-                velocity.x > 0 -> velocity.x - 1
-                else -> velocity.x
-            }
-
-            val newVelocityY = velocity.y - 1
-
-            velocity = Point(newVelocityX, newVelocityY)
-
-            if (isWithinTarget(position)) {
-                return maxY
-            }
-        }
-
-        return Int.MIN_VALUE
-    }
-
-    fun isWithinTarget(position: Point): Boolean {
-        val (a1, a2) = targetArea
-        return position.x >= a1.x && position.x <= a2.x
-                && position.y >= a1.y && position.y <= a2.y
-    }
-
+    private fun isWithinTarget(position: Point) = target
+        .let { (a1, a2) -> position.x >= a1.x && position.x <= a2.x && position.y >= a1.y && position.y <= a2.y }
 
     data class Point(val x: Int, val y: Int) {
         operator fun plus(other: Point) = Point(x + other.x, y + other.y)
