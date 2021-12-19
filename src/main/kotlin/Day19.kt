@@ -22,13 +22,13 @@ class Day19(val input: String) {
         while (scannersToCheck.isNotEmpty()) {
             val scannerToCheck = scannersToCheck.removeFirst()
 
-            val scannersToMatch = inputScanners
+            val scannersNotSolved = inputScanners
                 .filter { scanner -> scanner.index !in solvedScanners.map { solvedScanner -> solvedScanner.index } }
 
-            for (scanner in scannersToMatch) {
-                matchScanner(scanner, scannerToCheck)?.let { matchedScanner ->
-                    scannersToCheck += matchedScanner
-                    solvedScanners += matchedScanner
+            for (scanner in scannersNotSolved) {
+                solveScanner(scanner, scannerToCheck)?.let { solvedScanner ->
+                    scannersToCheck += solvedScanner
+                    solvedScanners += solvedScanner
                 }
             }
         }
@@ -36,7 +36,7 @@ class Day19(val input: String) {
         return solvedScanners
     }
 
-    private fun matchScanner(scanner: Scanner, solvedScanner: Scanner): Scanner? {
+    private fun solveScanner(scanner: Scanner, solvedScanner: Scanner): Scanner? {
         for (swap in swaps) {
             for (negation in negations) {
                 val adjustedBeacons = scanner.beacons.map { beacon -> swap(beacon) * negation }
