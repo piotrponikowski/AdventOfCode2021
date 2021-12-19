@@ -85,43 +85,11 @@ class Day19(val input: String) {
         { (x, y, z) -> Point(-x, y, -z) },
         { (x, y, z) -> Point(-y, -x, -z) },
     )
-
+    
     data class Scanner(val index: Int, val beacons: List<Point>, val position: Point = Point(0, 0, 0))
 
     data class Point(val x: Int, val y: Int, val z: Int) {
         operator fun plus(other: Point) = Point(x + other.x, y + other.y, z + other.z)
         operator fun minus(other: Point) = Point(x - other.x, y - other.y, z - other.z)
-        operator fun times(other: Point) = Point(x * other.x, y * other.y, z * other.z)
     }
-
-    companion object {
-        fun rotateX(point: Point) = Point(point.x, -point.z, point.y)
-        fun rotateY(point: Point) = Point(-point.z, point.y, point.x)
-        fun rotateZ(point: Point) = Point(-point.y, point.x, point.z)
-
-        fun allRotations(): Set<Point> {
-            var point = Point(1, 2, 3)
-            var rotations = mutableSetOf<Point>()
-            repeat(4) {
-                point = rotateX(point)
-                rotations.add(point)
-                repeat(4) {
-                    point = rotateY(point)
-                    rotations.add(point)
-                    repeat(4) {
-                        point = rotateZ(point)
-                        rotations.add(point)
-                    }
-                }
-            }
-
-            return rotations
-        }
-    }
-}
-
-
-fun main() {
-    println(Day19.allRotations())
-
 }
