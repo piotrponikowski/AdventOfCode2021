@@ -37,12 +37,10 @@ class Day19(val input: String) {
     }
 
     private fun solveScanner(scanner: Scanner, solvedScanner: Scanner): Scanner? {
-        for (swap in swaps) {
-            for (negation in negations) {
-                val adjustedBeacons = scanner.beacons.map { beacon -> swap(beacon) * negation }
-                findDelta(adjustedBeacons, solvedScanner.beacons)?.let { delta ->
-                    return Scanner(scanner.index, adjustedBeacons.map { beacon -> beacon - delta }, delta)
-                }
+        for (rotate in rotations) {
+            val adjustedBeacons = scanner.beacons.map { beacon -> rotate(beacon) }
+            findDelta(adjustedBeacons, solvedScanner.beacons)?.let { delta ->
+                return Scanner(scanner.index, adjustedBeacons.map { beacon -> beacon - delta }, delta)
             }
         }
         return null
@@ -61,16 +59,31 @@ class Day19(val input: String) {
         return null
     }
 
-    private val negations = listOf(-1, 1)
-        .let { rotation -> rotation.flatMap { x -> rotation.flatMap { y -> rotation.map { z -> Point(x, y, z) } } } }
-
-    private val swaps = listOf<(Point) -> Point>(
-        { point -> Point(point.x, point.y, point.z) },
-        { point -> Point(point.x, point.z, point.y) },
-        { point -> Point(point.y, point.x, point.z) },
-        { point -> Point(point.y, point.z, point.x) },
-        { point -> Point(point.z, point.x, point.y) },
-        { point -> Point(point.z, point.y, point.x) },
+    private val rotations = listOf<(Point) -> Point>(
+        { (x, y, z) -> Point(x, -z, y) },
+        { (x, y, z) -> Point(-y, -z, x) },
+        { (x, y, z) -> Point(z, -y, x) },
+        { (x, y, z) -> Point(y, z, x) },
+        { (x, y, z) -> Point(-z, y, x) },
+        { (x, y, z) -> Point(-x, -z, -y) },
+        { (x, y, z) -> Point(z, -x, -y) },
+        { (x, y, z) -> Point(x, z, -y) },
+        { (x, y, z) -> Point(-z, x, -y) },
+        { (x, y, z) -> Point(y, -z, -x) },
+        { (x, y, z) -> Point(z, y, -x) },
+        { (x, y, z) -> Point(-y, z, -x) },
+        { (x, y, z) -> Point(-z, -y, -x) },
+        { (x, y, z) -> Point(z, x, y) },
+        { (x, y, z) -> Point(-x, z, y) },
+        { (x, y, z) -> Point(-z, -x, y) },
+        { (x, y, z) -> Point(x, -y, -z) },
+        { (x, y, z) -> Point(-x, -y, z) },
+        { (x, y, z) -> Point(y, -x, z) },
+        { (x, y, z) -> Point(x, y, z) },
+        { (x, y, z) -> Point(-y, x, z) },
+        { (x, y, z) -> Point(y, x, -z) },
+        { (x, y, z) -> Point(-x, y, -z) },
+        { (x, y, z) -> Point(-y, -x, -z) },
     )
 
     data class Scanner(val index: Int, val beacons: List<Point>, val position: Point = Point(0, 0, 0))
@@ -80,4 +93,35 @@ class Day19(val input: String) {
         operator fun minus(other: Point) = Point(x - other.x, y - other.y, z - other.z)
         operator fun times(other: Point) = Point(x * other.x, y * other.y, z * other.z)
     }
+
+    companion object {
+        fun rotateX(point: Point) = Point(point.x, -point.z, point.y)
+        fun rotateY(point: Point) = Point(-point.z, point.y, point.x)
+        fun rotateZ(point: Point) = Point(-point.y, point.x, point.z)
+
+        fun allRotations(): Set<Point> {
+            var point = Point(1, 2, 3)
+            var rotations = mutableSetOf<Point>()
+            repeat(4) {
+                point = rotateX(point)
+                rotations.add(point)
+                repeat(4) {
+                    point = rotateY(point)
+                    rotations.add(point)
+                    repeat(4) {
+                        point = rotateZ(point)
+                        rotations.add(point)
+                    }
+                }
+            }
+
+            return rotations
+        }
+    }
+}
+
+
+fun main() {
+    println(Day19.allRotations())
+
 }
