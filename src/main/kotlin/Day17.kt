@@ -6,36 +6,47 @@ class Day17(val input: String) {
         .matchEntire(input)!!.destructured
         .let { (x1, x2, y1, y2) -> Point(x1.toInt(), y1.toInt()) to Point(x2.toInt(), y2.toInt()) }
 
-    fun part1() = 1
-    fun part2() = 2
+    fun part1() = solve().maxOf { probe -> probe.maxY }
+    fun part2() = solve().count()
 
-    data class Probe(val velocity: Point, val maxY: Int, val position: Point = Point(0, 0)) {
-        fun step() {
+    private fun solve() = target
+        .let { (t1, t2) -> (0..t2.x).flatMap { vx -> (t1.y..-t1.y).map { vy -> Point(vx, vy) } } }
+        .map { velocity -> simulateProbe(velocity) }
+        .filter { probe -> probe.isWithinTarget(target) }
+
+    private fun simulateProbe(velocity: Point): Probe {
+        var probe = Probe(velocity)
+        while (probe.shouldContinue(target)) {
+            probe = probe.step()
+        }
+        return probe
+    }
+
+    data class Probe(val velocity: Point, val maxY: Int = 0, val position: Point = Point(0, 0)) {
+        fun step(): Probe {
             val newPosition = position + velocity
             val newVelocity = Point(max(velocity.x - 1, 0), velocity.y - 1)
             val maxY = max(newPosition.y, maxY)
-            
-            Probe(newPosition, maxY, newVelocity)
+
+            return Probe(newVelocity, maxY, newPosition)
         }
 
-//        fun missedTarget() =
+        fun shouldContinue(target: Pair<Point, Point>) = target.let { (t1, t2) ->
+            when {
+                isWithinTarget(target) -> false
+                position.y < t1.y && velocity.y < 0 -> false
+                position.x > t2.x && velocity.x > 0 -> false
+                position.x < t1.x && velocity.x < 0 -> false
+                else -> true
+            }
+        }
 
+        fun isWithinTarget(target: Pair<Point, Point>) = target.let { (a1, a2) ->
+            position.x >= a1.x && position.x <= a2.x && position.y >= a1.y && position.y <= a2.y
+        }
     }
-
-    private fun isWithinTarget(position: Point) = target
-        .let { (a1, a2) -> position.x >= a1.x && position.x <= a2.x && position.y >= a1.y && position.y <= a2.y }
 
     data class Point(val x: Int, val y: Int) {
         operator fun plus(other: Point) = Point(x + other.x, y + other.y)
     }
-}
-
-fun main() {
-    //2364
-    //4716
-    val input = readText("day17.txt", false)
-//    println(Day17(input).testVelocityY(0, listOf(0, 1, 2, 3, 4, 5, 6, 7)))
-    println(Day17(input).part2())
-//    println(Day17(input).testVelocityXY(30, -10))
-
 }

@@ -2,7 +2,7 @@ class Day14(val input: List<String>) {
 
     private val template = input.first()
 
-    private val insertions = input.drop(2).map { it.split(" -> ") }
+    private val insertions = input.drop(2).map { line -> line.split(" -> ") }
         .associate { (pair, insertion) -> pair to insertion }
 
     private val initialState = template.windowed(2)

@@ -13,7 +13,7 @@ class Day7(private val input: String) {
         positionRange.minOf { position -> positions.sumOf { other -> costMethod(abs(other - position)) } }
     }
 
-    private fun parsePositions() = input.split(",").map { it.toInt() }
+    private fun parsePositions() = input.split(",").map { position -> position.toInt() }
     private fun constantCost(distance: Int) = distance
     private fun increasedCost(distance: Int) = ((distance + 1) * distance) / 2
 }

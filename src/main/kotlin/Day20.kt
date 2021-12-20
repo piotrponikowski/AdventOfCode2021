@@ -2,7 +2,7 @@ import kotlin.math.pow
 
 class Day20(val input: List<String>) {
 
-    private val algorithm = input.first().toCharArray().toTypedArray()
+    private val algorithm = input.first().toCharArray()
 
     private val initialImage = input.drop(2)
         .flatMapIndexed { y, line -> line.mapIndexed { x, symbol -> Point(x, y) to symbol } }.toMap()
