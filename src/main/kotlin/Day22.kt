@@ -2,7 +2,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 class Day22(val input: List<String>) {
-    private val pattern = Regex("""^(\w+) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)${'$'}""")
+    private val pattern = Regex("""^(\w+) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)$""")
 
     private val cubes = input.map { line -> pattern.matchEntire(line)!!.destructured }
         .map { (type, x1, x2, y1, y2, z1, z2) ->
