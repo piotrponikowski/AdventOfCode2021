@@ -41,7 +41,8 @@ class Day22(val input: List<String>) {
         fun intersection(other: Cube): Cube {
             val min = Point(max(min.x, other.min.x), max(min.y, other.min.y), max(min.z, other.min.z))
             val max = Point(min(max.x, other.max.x), min(max.y, other.max.y), min(max.z, other.max.z))
-            return Cube(!type, min, max)
+            val negatedType = if (type == Type.ON) Type.OFF else Type.ON
+            return Cube(negatedType, min, max)
         }
 
         fun size() = (max.x - min.x + 1L) * (max.y - min.y + 1L) * (max.z - min.z + 1L) * type.multiplier
@@ -49,11 +50,7 @@ class Day22(val input: List<String>) {
         fun isInitRegion() = min.x >= -50 && max.x <= 50
     }
 
-    enum class Type(val multiplier: Int) {
-        ON(1), OFF(-1);
-
-        operator fun not() = if (this == ON) OFF else ON
-    }
+    enum class Type(val multiplier: Int) { ON(1), OFF(-1) }
 
     data class Point(val x: Int, val y: Int, val z: Int) {
         operator fun plus(other: Point) = Point(x + other.x, y + other.y, z + other.z)
